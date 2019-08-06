@@ -1,0 +1,49 @@
+{%- layout none -%}
+
+[
+	{% for linklist in linklists %}
+        {
+            "handle": {{ linklist.object.handle | json }},
+            "levels": {{ linklist.levels }},
+            "title": {{ linklist.title | json }},
+            "links": [
+                {% for link in linklist.links %}{
+                    {% if link.type != "http_link" %}
+                        "id": {% if link.object.id %}{{ link.object.id }}{% else %}{{ "null" }}{% endif %},
+                        "handle": {{ link.object.handle | json }},
+                        "title": {{ link.title | json }},
+                        "type": {{ link.type | json }},
+                        "url": {% if link.type != "http_link" %}{{ shop.url | append: link.url | json }}{% else %}{{ link.url | json }}{% endif %},
+                        "links": [
+                            {%- for linkLevel1 in link.links -%}
+                                {
+                                    "id": {% if linkLevel1.object.id %}{{ linkLevel1.object.id }}{% else %}{{ "null" }}{% endif %},
+                                    "handle": {{ linkLevel1.object.handle | json }},
+                                    "title": {{ linkLevel1.title | json }},
+                                    "type": {{ linkLevel1.type | json }},
+                                    "url": {% if linkLevel1.type != "http_link" %}{{ shop.url | append: linkLevel1.url | json }}{% else %}{{ linkLevel1.url | json }}{% endif %},
+                                    "links": [
+                                        {%- for linkLevel2 in linkLevel1.links -%}
+                                        {
+                                            "id": {% if linkLevel2.object.id %}{{ linkLevel2.object.id }}{% else %}{{ "null" }}{% endif %},
+                                            "handle": {{ linkLevel2.object.handle | json }},
+                                            "title": {{ linkLevel2.title | json }},
+                                            "type": {{ linkLevel2.type | json }},
+                                            "url": {% if linkLevel2.type != "http_link" %}{{ shop.url | append: linkLevel1.url | json }}{% else %}{{ linkLevel2.url | json }}{% endif %}
+                                        }
+                                        {%- if forloop.last == false %},{% endif -%}
+                                        {%- endfor -%}
+                                    ]
+                                }
+                                {%- if forloop.last == false %},{% endif -%}
+                            {%- endfor -%}
+                        ]
+                    {% endif %}
+                }
+                {%- if forloop.last == false %},{% endif -%}
+                {% endfor %}
+            ]
+        }
+	{%- if forloop.last == false -%},{%- endif -%}
+	{%- endfor -%}
+]
